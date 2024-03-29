@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 
 namespace API.Models;
 
@@ -30,12 +31,16 @@ public partial class Video
     public int? TotalViews { get; set; }
 
     public int? TotalSubscribers { get; set; }
+    [JsonIgnore]
 
     public virtual ICollection<Comment> Comments { get; } = new List<Comment>();
+    [JsonIgnore]
 
     public virtual ICollection<LikesDislike> LikesDislikes { get; } = new List<LikesDislike>();
+    [JsonIgnore]
 
     public virtual User? User { get; set; }
+    [JsonIgnore]
 
     public virtual ICollection<View> Views { get; } = new List<View>();
 }

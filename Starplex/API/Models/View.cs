@@ -12,6 +12,7 @@ public partial class View
     public int? VideoId { get; set; }
 
     public DateTime? ViewDate { get; set; }
+    [JsonIgnore]
 
     public virtual User? User { get; set; }
 

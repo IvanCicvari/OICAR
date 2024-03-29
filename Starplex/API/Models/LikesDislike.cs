@@ -12,8 +12,10 @@ public partial class LikesDislike
     public int? VideoId { get; set; }
 
     public int? LikeStatus { get; set; }
+    [JsonIgnore]
 
     public virtual User? User { get; set; }
+    [JsonIgnore]
 
     public virtual Video? Video { get; set; }
 }

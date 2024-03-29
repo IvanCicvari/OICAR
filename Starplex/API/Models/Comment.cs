@@ -14,8 +14,10 @@ public partial class Comment
     public string? CommentText { get; set; }
 
     public DateTime? CommentDate { get; set; }
+    [JsonIgnore]
 
     public virtual User? User { get; set; }
+    [JsonIgnore]
 
     public virtual Video? Video { get; set; }
 }
