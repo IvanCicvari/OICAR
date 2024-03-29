@@ -1,16 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using API.Models;
-using Microsoft.IdentityModel.Tokens;
-using System.IdentityModel.Tokens.Jwt;
-using System.Text;
+using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
-using System.Security.Cryptography;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
+using System.IdentityModel.Tokens.Jwt;
 
 namespace API.Controllers
 {
@@ -18,9 +15,8 @@ namespace API.Controllers
     [ApiController]
     public class UsersController : ControllerBase
     {
-        private IConfiguration _config;
-
         private readonly StarplexContext _context;
+        private IConfiguration _config;
 
         public UsersController(StarplexContext context, IConfiguration config)
         {
@@ -34,36 +30,13 @@ namespace API.Controllers
         [Authorize]
         public async Task<ActionResult<IEnumerable<User>>> GetUsers()
         {
-            if (_context.Users == null)
-            {
-                return NotFound();
-            }
-
-            // Generate JWT token
-            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]));
-            var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
-
-            var token = new JwtSecurityToken(_config["Jwt:Issuer"],
-                _config["Jwt:Issuer"],
-                null,
-                expires: DateTime.Now.AddMinutes(120),
-                signingCredentials: credentials);
-
-            var tokenString = new JwtSecurityTokenHandler().WriteToken(token);
-
-            // Return token along with user data
-            return Ok(new { Token = tokenString, Users = await _context.Users.ToListAsync() });
+            return await _context.Users.ToListAsync();
         }
-
 
         // GET: api/Users/5
         [HttpGet("{id}")]
         public async Task<ActionResult<User>> GetUser(int id)
         {
-          if (_context.Users == null)
-          {
-              return NotFound();
-          }
             var user = await _context.Users.FindAsync(id);
 
             if (user == null)
@@ -113,70 +86,20 @@ namespace API.Controllers
         {
             if (_context.Users == null)
             {
-                return Problem("Entity set 'StarplexContext.Users'  is null.");
+                return Problem("Entity set 'StarplexContext.Users' is null.");
             }
-            // Generate salt
-            byte[] salt = GenerateSalt();
-
-            // Hash password with salt
-            byte[] hashedPassword = HashPassword(Encoding.UTF8.GetBytes(user.PasswordHash), salt);
-
-            // Convert byte arrays to base64 strings for storage
-            string saltString = Convert.ToBase64String(salt);
-            string hashedPasswordString = Convert.ToBase64String(hashedPassword);
-
-            // Store salt and hashed password
-            user.PasswordSalt = saltString;
-            user.PasswordHash = hashedPasswordString;
 
             _context.Users.Add(user);
             await _context.SaveChangesAsync();
 
-            // Generate JWT token for the newly created user
-            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]));
-            var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
-
-            var token = new JwtSecurityToken(_config["Jwt:Issuer"],
-                _config["Jwt:Issuer"],
-                null,
-                expires: DateTime.Now.AddMinutes(120),
-                signingCredentials: credentials);
-
-            var tokenString = new JwtSecurityTokenHandler().WriteToken(token);
-
-            // Return the user along with the JWT token
-            return CreatedAtAction("GetUser", new { id = user.Iduser }, new { Token = tokenString, User = user });
-        }
-        // Method to generate salt
-        private byte[] GenerateSalt()
-        {
-            byte[] salt = new byte[16];
-            using (var rng = new RNGCryptoServiceProvider())
-            {
-                rng.GetBytes(salt);
-            }
-            return salt;
-        }
-
-        // Method to hash password with salt
-        private byte[] HashPassword(byte[] password, byte[] salt)
-        {
-            using (var hmac = new HMACSHA512(salt))
-            {
-                return hmac.ComputeHash(password);
-            }
+            return CreatedAtAction("GetUser", new { id = user.Iduser }, user);
         }
 
         // DELETE: api/Users/5
         [HttpDelete("{id}")]
         [Authorize]
-
         public async Task<IActionResult> DeleteUser(int id)
         {
-            if (_context.Users == null)
-            {
-                return NotFound();
-            }
             var user = await _context.Users.FindAsync(id);
             if (user == null)
             {
@@ -191,7 +114,52 @@ namespace API.Controllers
 
         private bool UserExists(int id)
         {
-            return (_context.Users?.Any(e => e.Iduser == id)).GetValueOrDefault();
+            return _context.Users.Any(e => e.Iduser == id);
+        }
+
+        [AllowAnonymous]
+        [HttpPost("GenerateToken")]
+        public IActionResult GenerateToken(User userLogin) // Change IActionResult
+        {
+            IActionResult response = Unauthorized();
+
+            // Authenticate the user
+            var user = AuthenticateUser(userLogin);
+
+            if (user != null)
+            {
+                // Generate JWT token
+                var token = GenerateTokens(user);
+                response = Ok(new { token });
+            }
+
+            return response;
+        }
+
+        private User AuthenticateUser(User userLogin)
+        {
+            // You'll need to implement your own logic here to authenticate the user
+            // For demonstration purposes, I'll just check if the username is "admin"
+            if (userLogin.Username == "admin" && userLogin.Password == "password") // Example authentication logic
+            {
+                // Return a user object if authenticated
+                return new User { Username = userLogin.Username };
+            }
+            else
+            {
+                // Return null if authentication fails
+                return null;
+            }
+        }
+
+        private string GenerateTokens(User user)
+        {
+            // Generate JWT token using user claims
+            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]));
+            var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
+
+            var token = new JwtSecurityToken(_config["Jwt:Issuer"], _config["Jwt:Audience"], null, expires: DateTime.Now.AddDays(1), signingCredentials: credentials);
+            return new JwtSecurityTokenHandler().WriteToken(token);
         }
     }
 }

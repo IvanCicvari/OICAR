@@ -28,8 +28,7 @@ public partial class StarplexContext : DbContext
     public virtual DbSet<View> Views { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see http://go.microsoft.com/fwlink/?LinkId=723263.
-        => optionsBuilder.UseSqlServer("server=.\\SQLExpress2;Database=Starplex;User=sa;Password=SQL;TrustServerCertificate=True;MultipleActiveResultSets=true");
+        => optionsBuilder.UseSqlServer("Name=ConnectionStrings:StarplexConnection");
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -119,6 +118,7 @@ public partial class StarplexContext : DbContext
                 .HasColumnType("datetime")
                 .HasColumnName("last_login");
             entity.Property(e => e.LastName).HasColumnName("last_name");
+            entity.Property(e => e.Password).HasColumnName("password");
             entity.Property(e => e.PasswordHash).HasColumnName("password_hash");
             entity.Property(e => e.PasswordSalt).HasColumnName("password_salt");
             entity.Property(e => e.ProfileImage).HasColumnName("profile_image");

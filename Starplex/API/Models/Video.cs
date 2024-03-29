@@ -6,6 +6,7 @@ namespace API.Models;
 
 public partial class Video
 {
+    [JsonIgnore]
     public int Idvideo { get; set; }
 
     public int? UserId { get; set; }
@@ -32,15 +33,11 @@ public partial class Video
 
     public int? TotalSubscribers { get; set; }
     [JsonIgnore]
-
     public virtual ICollection<Comment> Comments { get; } = new List<Comment>();
     [JsonIgnore]
-
     public virtual ICollection<LikesDislike> LikesDislikes { get; } = new List<LikesDislike>();
     [JsonIgnore]
-
     public virtual User? User { get; set; }
     [JsonIgnore]
-
     public virtual ICollection<View> Views { get; } = new List<View>();
 }

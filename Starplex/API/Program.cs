@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+﻿using API.Models;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
@@ -7,8 +9,10 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 //Jwt configuration starts here
-var jwtIssuer = builder.Configuration.GetSection("Jwt:Issuer").Get<string>();
-var jwtKey = builder.Configuration.GetSection("Jwt:Key").Get<string>();
+builder.Services.AddDbContext<StarplexContext>(options =>
+{
+    options.UseSqlServer("Name=ConnectionStrings:StarplexConnection");
+});
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
  .AddJwtBearer(options =>
@@ -19,9 +23,9 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
          ValidateAudience = true,
          ValidateLifetime = true,
          ValidateIssuerSigningKey = true,
-         ValidIssuer = jwtIssuer,
-         ValidAudience = jwtIssuer,
-         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey))
+         ValidIssuer = builder.Configuration["Jwt:Issuer"],
+         ValidAudience = builder.Configuration["Jwt:Audience"],
+         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
      };
  });
 
