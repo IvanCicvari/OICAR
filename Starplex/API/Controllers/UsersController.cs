@@ -108,9 +108,7 @@ namespace API.Controllers
 
         // POST: api/Users
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPost]
-        [Authorize]
-
+        [HttpPost, Authorize]
         public async Task<ActionResult<User>> PostUser(User user)
         {
             if (_context.Users == null)
@@ -121,7 +119,7 @@ namespace API.Controllers
             byte[] salt = GenerateSalt();
 
             // Hash password with salt
-            byte[] hashedPassword = HashPassword(Encoding.UTF8.GetBytes(user.Password), salt);
+            byte[] hashedPassword = HashPassword(Encoding.UTF8.GetBytes(user.PasswordHash), salt);
 
             // Convert byte arrays to base64 strings for storage
             string saltString = Convert.ToBase64String(salt);

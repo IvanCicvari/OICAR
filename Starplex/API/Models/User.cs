@@ -19,16 +19,20 @@ public partial class User
     public string? PasswordHash { get; set; }
     [JsonIgnore]
     public string? PasswordSalt { get; set; }
+    [JsonIgnore]
 
     public DateTime? CreatedAt { get; set; }
+    [JsonIgnore]
 
     public DateTime? LastLogin { get; set; }
 
     public string? ProfileImage { get; set; }
 
     public string? Bio { get; set; }
+    [JsonIgnore]
 
     public bool? IsVerified { get; set; }
+    [JsonIgnore]
 
     public string? SubscriptionStatus { get; set; }
     [JsonIgnore]
