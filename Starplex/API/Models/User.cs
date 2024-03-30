@@ -6,6 +6,15 @@ namespace API.Models;
 
 public partial class User
 {
+    public User()
+    {
+        // Set default values here
+        CreatedAt = DateTime.UtcNow;
+        IsVerified = false;
+        LastLogin = DateTime.UtcNow;
+        SubscriptionStatus = "0";
+        // Other properties with default values can be set here as well
+    }
     [JsonIgnore]
     public int Iduser { get; set; }
 

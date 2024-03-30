@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -22,6 +23,7 @@ namespace API.Controllers
 
         // GET: api/LikesDislikes/GetLikesDislikes
         [HttpGet("GetLikesDislikes")]
+        [AllowAnonymous] // Allows anonymous access
         public async Task<ActionResult<IEnumerable<LikesDislike>>> GetLikesDislikes()
         {
             if (_context.LikesDislikes == null)
@@ -33,6 +35,7 @@ namespace API.Controllers
 
         // GET: api/LikesDislikes/GetLikesDislike/5
         [HttpGet("GetLikesDislike/{id}")]
+        [AllowAnonymous] // Allows anonymous access
         public async Task<ActionResult<LikesDislike>> GetLikesDislike(int id)
         {
             if (_context.LikesDislikes == null)
@@ -51,6 +54,7 @@ namespace API.Controllers
 
         // PUT: api/LikesDislikes/UpdateLikesDislike/5
         [HttpPut("UpdateLikesDislike/{id}")]
+        [Authorize] // Requires authorization to access
         public async Task<IActionResult> PutLikesDislike(int id, LikesDislike likesDislike)
         {
             if (id != likesDislike.LikeId)
@@ -81,7 +85,8 @@ namespace API.Controllers
 
         // POST: api/LikesDislikes/CreateLikesDislike
         [HttpPost("CreateLikesDislike")]
-        public async Task<ActionResult<LikesDislike>> CreateLikesDislike(LikesDislike likesDislike)
+        [Authorize] // Requires authorization to access
+        public async Task<ActionResult<LikesDislike>> PostLikesDislike(LikesDislike likesDislike)
         {
             if (_context.LikesDislikes == null)
             {
@@ -95,6 +100,7 @@ namespace API.Controllers
 
         // DELETE: api/LikesDislikes/DeleteLikesDislike/5
         [HttpDelete("DeleteLikesDislike/{id}")]
+        [Authorize] // Requires authorization to access
         public async Task<IActionResult> DeleteLikesDislike(int id)
         {
             if (_context.LikesDislikes == null)

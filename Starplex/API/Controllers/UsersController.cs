@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using System.IdentityModel.Tokens.Jwt;
+using System.Security.Cryptography;
 
 namespace API.Controllers
 {
@@ -81,8 +82,8 @@ namespace API.Controllers
 
         // POST: api/Users
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPost("PostUser")]
-        [Authorize]
+        [HttpPost("CreateUser")]
+        [AllowAnonymous]
         public async Task<ActionResult<User>> PostUser(User user)
         {
             if (_context.Users == null)
@@ -90,10 +91,38 @@ namespace API.Controllers
                 return Problem("Entity set 'StarplexContext.Users' is null.");
             }
 
+            byte[] salt = GenerateSalt();
+
+            string hashedPassword = HashPassword(user.Password, salt);
+
+            // Save hashed password and salt to user object
+            user.PasswordHash = hashedPassword;
+            user.PasswordSalt = Convert.ToBase64String(salt);
+
             _context.Users.Add(user);
             await _context.SaveChangesAsync();
 
             return CreatedAtAction("GetUser", new { id = user.Iduser }, user);
+        }
+
+        private byte[] GenerateSalt()
+        {
+            byte[] salt = new byte[16];
+            using (var rng = RandomNumberGenerator.Create())
+            {
+                rng.GetBytes(salt);
+            }
+            return salt;
+        }
+
+        private string HashPassword(string password, byte[] salt)
+        {
+            using (var hmac = new HMACSHA512(salt))
+            {
+                byte[] passwordBytes = Encoding.UTF8.GetBytes(password);
+                byte[] hashedPasswordBytes = hmac.ComputeHash(passwordBytes);
+                return Convert.ToBase64String(hashedPasswordBytes);
+            }
         }
 
         // DELETE: api/Users/5
