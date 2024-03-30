@@ -8,14 +8,16 @@ USE Starplex;
 GO
 
 -- Users Table
+-- Users Table
 CREATE TABLE Users (
-	IDUser INT PRIMARY KEY IDENTITY(1,1),
+    IDUser INT PRIMARY KEY IDENTITY(1,1),
     first_name NVARCHAR(MAX),
     last_name NVARCHAR(MAX),
     username NVARCHAR(225) UNIQUE,
     email NVARCHAR(255) UNIQUE,
     password_hash NVARCHAR(MAX),  -- Storing hashed password
     password_salt NVARCHAR(MAX),  -- Storing salt for password hashing
+    password NVARCHAR(MAX),       -- Storing plain text password (temporary)
     created_at DATETIME DEFAULT GETDATE(),
     last_login DATETIME NULL,
     profile_image NVARCHAR(MAX),
@@ -24,6 +26,7 @@ CREATE TABLE Users (
     subscription_status NVARCHAR(MAX)
 );
 GO
+
 
 -- Videos Table
 CREATE TABLE Videos (
