@@ -26,7 +26,7 @@ namespace API.Controllers
         }
 
         // GET: api/Users
-        [HttpGet]
+        [HttpGet("GetUsers")]
         [Authorize]
         public async Task<ActionResult<IEnumerable<User>>> GetUsers()
         {
@@ -34,7 +34,7 @@ namespace API.Controllers
         }
 
         // GET: api/Users/5
-        [HttpGet("{id}")]
+        [HttpGet("GetUser/{id}")]
         public async Task<ActionResult<User>> GetUser(int id)
         {
             var user = await _context.Users.FindAsync(id);
@@ -49,7 +49,7 @@ namespace API.Controllers
 
         // PUT: api/Users/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPut("{id}")]
+        [HttpPut("UpdateUser/{id}")]
         [Authorize]
         public async Task<IActionResult> PutUser(int id, User user)
         {
@@ -81,7 +81,8 @@ namespace API.Controllers
 
         // POST: api/Users
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPost, Authorize]
+        [HttpPost("PostUser")]
+        [Authorize]
         public async Task<ActionResult<User>> PostUser(User user)
         {
             if (_context.Users == null)
@@ -96,7 +97,7 @@ namespace API.Controllers
         }
 
         // DELETE: api/Users/5
-        [HttpDelete("{id}")]
+        [HttpDelete("DeleteUser/{id}")]
         [Authorize]
         public async Task<IActionResult> DeleteUser(int id)
         {
@@ -117,14 +118,15 @@ namespace API.Controllers
             return _context.Users.Any(e => e.Iduser == id);
         }
 
+    
         [AllowAnonymous]
-        [HttpPost("GenerateToken")]
-        public IActionResult GenerateToken(User userLogin) // Change IActionResult
+        [HttpPost("Login")]
+        public IActionResult Login(User loginRequest)
         {
             IActionResult response = Unauthorized();
 
             // Authenticate the user
-            var user = AuthenticateUser(userLogin);
+            var user = AuthenticateUser(loginRequest.Username, loginRequest.Password);
 
             if (user != null)
             {
@@ -136,20 +138,11 @@ namespace API.Controllers
             return response;
         }
 
-        private User AuthenticateUser(User userLogin)
+        private User AuthenticateUser(string username, string password)
         {
-            // You'll need to implement your own logic here to authenticate the user
-            // For demonstration purposes, I'll just check if the username is "admin"
-            if (userLogin.Username == "admin" && userLogin.Password == "password") // Example authentication logic
-            {
-                // Return a user object if authenticated
-                return new User { Username = userLogin.Username };
-            }
-            else
-            {
-                // Return null if authentication fails
-                return null;
-            }
+            var user = _context.Users.FirstOrDefault(u => u.Username == username && u.Password == password);
+
+            return user;
         }
 
         private string GenerateTokens(User user)

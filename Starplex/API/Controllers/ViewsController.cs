@@ -6,9 +6,13 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using API.Models;
+using Microsoft.AspNetCore.Authorization;
 
 namespace API.Controllers
 {
+    /// <summary>
+    /// Represents the API for managing views.
+    /// </summary>
     [Route("api/[controller]")]
     [ApiController]
     public class ViewsController : ControllerBase
@@ -20,25 +24,28 @@ namespace API.Controllers
             _context = context;
         }
 
-        // GET: api/Views
-        [HttpGet]
+        // GET: api/Views/GetAllViews
+        [HttpGet("GetAllViews")]
+        [Authorize] // Requires authorization to access
+        [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult<IEnumerable<View>>> GetViews()
         {
-          if (_context.Views == null)
-          {
-              return NotFound();
-          }
+            if (_context.Views == null)
+            {
+                return NotFound();
+            }
             return await _context.Views.ToListAsync();
         }
 
-        // GET: api/Views/5
-        [HttpGet("{id}")]
+        // GET: api/Views/GetView/5
+        [HttpGet("GetView/{id}")]
+        [AllowAnonymous] // Allows anonymous access
         public async Task<ActionResult<View>> GetView(int id)
         {
-          if (_context.Views == null)
-          {
-              return NotFound();
-          }
+            if (_context.Views == null)
+            {
+                return NotFound();
+            }
             var view = await _context.Views.FindAsync(id);
 
             if (view == null)
@@ -49,9 +56,9 @@ namespace API.Controllers
             return view;
         }
 
-        // PUT: api/Views/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPut("{id}")]
+        // PUT: api/Views/UpdateView/5
+        [HttpPut("UpdateView/{id}")]
+        [Authorize] // Requires authorization to access
         public async Task<IActionResult> PutView(int id, View view)
         {
             if (id != view.ViewId)
@@ -80,23 +87,24 @@ namespace API.Controllers
             return NoContent();
         }
 
-        // POST: api/Views
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPost]
+        // POST: api/Views/AddView
+        [HttpPost("AddView")]
+        [Authorize] // Requires authorization to access
         public async Task<ActionResult<View>> PostView(View view)
         {
-          if (_context.Views == null)
-          {
-              return Problem("Entity set 'StarplexContext.Views'  is null.");
-          }
+            if (_context.Views == null)
+            {
+                return Problem("Entity set 'StarplexContext.Views' is null.");
+            }
             _context.Views.Add(view);
             await _context.SaveChangesAsync();
 
             return CreatedAtAction("GetView", new { id = view.ViewId }, view);
         }
 
-        // DELETE: api/Views/5
-        [HttpDelete("{id}")]
+        // DELETE: api/Views/DeleteView/5
+        [HttpDelete("DeleteView/{id}")]
+        [Authorize] // Requires authorization to access
         public async Task<IActionResult> DeleteView(int id)
         {
             if (_context.Views == null)

@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using API.Models;
+using Microsoft.AspNetCore.Authorization;
 
 namespace API.Controllers
 {
@@ -20,25 +21,27 @@ namespace API.Controllers
             _context = context;
         }
 
-        // GET: api/Subscriptions
-        [HttpGet]
+        // GET: api/Subscriptions/GetSubscriptions
+        [HttpGet("GetSubscriptions")]
+        [Authorize] // Requires authorization to access
         public async Task<ActionResult<IEnumerable<Subscription>>> GetSubscriptions()
         {
-          if (_context.Subscriptions == null)
-          {
-              return NotFound();
-          }
+            if (_context.Subscriptions == null)
+            {
+                return NotFound();
+            }
             return await _context.Subscriptions.ToListAsync();
         }
 
-        // GET: api/Subscriptions/5
-        [HttpGet("{id}")]
+        // GET: api/Subscriptions/GetSubscription/5
+        [HttpGet("GetSubscription/{id}")]
+        [AllowAnonymous] // Allows anonymous access
         public async Task<ActionResult<Subscription>> GetSubscription(int id)
         {
-          if (_context.Subscriptions == null)
-          {
-              return NotFound();
-          }
+            if (_context.Subscriptions == null)
+            {
+                return NotFound();
+            }
             var subscription = await _context.Subscriptions.FindAsync(id);
 
             if (subscription == null)
@@ -49,9 +52,9 @@ namespace API.Controllers
             return subscription;
         }
 
-        // PUT: api/Subscriptions/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPut("{id}")]
+        // PUT: api/Subscriptions/UpdateSubscription/5
+        [HttpPut("UpdateSubscription/{id}")]
+        [Authorize] // Requires authorization to access
         public async Task<IActionResult> PutSubscription(int id, Subscription subscription)
         {
             if (id != subscription.SubscriptionId)
@@ -80,23 +83,24 @@ namespace API.Controllers
             return NoContent();
         }
 
-        // POST: api/Subscriptions
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPost]
+        // POST: api/Subscriptions/CreateSubscription
+        [HttpPost("CreateSubscription")]
+        [Authorize] // Requires authorization to access
         public async Task<ActionResult<Subscription>> PostSubscription(Subscription subscription)
         {
-          if (_context.Subscriptions == null)
-          {
-              return Problem("Entity set 'StarplexContext.Subscriptions'  is null.");
-          }
+            if (_context.Subscriptions == null)
+            {
+                return Problem("Entity set 'StarplexContext.Subscriptions' is null.");
+            }
             _context.Subscriptions.Add(subscription);
             await _context.SaveChangesAsync();
 
             return CreatedAtAction("GetSubscription", new { id = subscription.SubscriptionId }, subscription);
         }
 
-        // DELETE: api/Subscriptions/5
-        [HttpDelete("{id}")]
+        // DELETE: api/Subscriptions/DeleteSubscription/5
+        [HttpDelete("DeleteSubscription/{id}")]
+        [Authorize] // Requires authorization to access
         public async Task<IActionResult> DeleteSubscription(int id)
         {
             if (_context.Subscriptions == null)

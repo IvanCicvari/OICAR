@@ -20,25 +20,25 @@ namespace API.Controllers
             _context = context;
         }
 
-        // GET: api/LikesDislikes
-        [HttpGet]
+        // GET: api/LikesDislikes/GetLikesDislikes
+        [HttpGet("GetLikesDislikes")]
         public async Task<ActionResult<IEnumerable<LikesDislike>>> GetLikesDislikes()
         {
-          if (_context.LikesDislikes == null)
-          {
-              return NotFound();
-          }
+            if (_context.LikesDislikes == null)
+            {
+                return NotFound();
+            }
             return await _context.LikesDislikes.ToListAsync();
         }
 
-        // GET: api/LikesDislikes/5
-        [HttpGet("{id}")]
+        // GET: api/LikesDislikes/GetLikesDislike/5
+        [HttpGet("GetLikesDislike/{id}")]
         public async Task<ActionResult<LikesDislike>> GetLikesDislike(int id)
         {
-          if (_context.LikesDislikes == null)
-          {
-              return NotFound();
-          }
+            if (_context.LikesDislikes == null)
+            {
+                return NotFound();
+            }
             var likesDislike = await _context.LikesDislikes.FindAsync(id);
 
             if (likesDislike == null)
@@ -49,9 +49,8 @@ namespace API.Controllers
             return likesDislike;
         }
 
-        // PUT: api/LikesDislikes/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPut("{id}")]
+        // PUT: api/LikesDislikes/UpdateLikesDislike/5
+        [HttpPut("UpdateLikesDislike/{id}")]
         public async Task<IActionResult> PutLikesDislike(int id, LikesDislike likesDislike)
         {
             if (id != likesDislike.LikeId)
@@ -80,23 +79,22 @@ namespace API.Controllers
             return NoContent();
         }
 
-        // POST: api/LikesDislikes
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPost]
-        public async Task<ActionResult<LikesDislike>> PostLikesDislike(LikesDislike likesDislike)
+        // POST: api/LikesDislikes/CreateLikesDislike
+        [HttpPost("CreateLikesDislike")]
+        public async Task<ActionResult<LikesDislike>> CreateLikesDislike(LikesDislike likesDislike)
         {
-          if (_context.LikesDislikes == null)
-          {
-              return Problem("Entity set 'StarplexContext.LikesDislikes'  is null.");
-          }
+            if (_context.LikesDislikes == null)
+            {
+                return Problem("Entity set 'StarplexContext.LikesDislikes'  is null.");
+            }
             _context.LikesDislikes.Add(likesDislike);
             await _context.SaveChangesAsync();
 
             return CreatedAtAction("GetLikesDislike", new { id = likesDislike.LikeId }, likesDislike);
         }
 
-        // DELETE: api/LikesDislikes/5
-        [HttpDelete("{id}")]
+        // DELETE: api/LikesDislikes/DeleteLikesDislike/5
+        [HttpDelete("DeleteLikesDislike/{id}")]
         public async Task<IActionResult> DeleteLikesDislike(int id)
         {
             if (_context.LikesDislikes == null)

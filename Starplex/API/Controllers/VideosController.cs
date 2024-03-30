@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -21,24 +22,18 @@ namespace API.Controllers
         }
 
         // GET: api/Videos
-        [HttpGet]
+        [HttpGet("GetVideos")]
+        [Authorize] // Requires authorization to access
         public async Task<ActionResult<IEnumerable<Video>>> GetVideos()
         {
-          if (_context.Videos == null)
-          {
-              return NotFound();
-          }
             return await _context.Videos.ToListAsync();
         }
 
         // GET: api/Videos/5
-        [HttpGet("{id}")]
+        [HttpGet("GetVideo/{id}")]
+        [AllowAnonymous] // Allows anonymous access
         public async Task<ActionResult<Video>> GetVideo(int id)
         {
-          if (_context.Videos == null)
-          {
-              return NotFound();
-          }
             var video = await _context.Videos.FindAsync(id);
 
             if (video == null)
@@ -51,7 +46,8 @@ namespace API.Controllers
 
         // PUT: api/Videos/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPut("{id}")]
+        [HttpPut("UpdateVideo/{id}")]
+        [Authorize] // Requires authorization to access
         public async Task<IActionResult> PutVideo(int id, Video video)
         {
             if (id != video.Idvideo)
@@ -82,13 +78,10 @@ namespace API.Controllers
 
         // POST: api/Videos
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPost]
+        [HttpPost("UpdateVideo")]
+        [Authorize] // Requires authorization to access
         public async Task<ActionResult<Video>> PostVideo(Video video)
         {
-          if (_context.Videos == null)
-          {
-              return Problem("Entity set 'StarplexContext.Videos'  is null.");
-          }
             _context.Videos.Add(video);
             await _context.SaveChangesAsync();
 
@@ -96,13 +89,10 @@ namespace API.Controllers
         }
 
         // DELETE: api/Videos/5
-        [HttpDelete("{id}")]
+        [HttpDelete("DeleteVideo/{id}")]
+        [Authorize] // Requires authorization to access
         public async Task<IActionResult> DeleteVideo(int id)
         {
-            if (_context.Videos == null)
-            {
-                return NotFound();
-            }
             var video = await _context.Videos.FindAsync(id);
             if (video == null)
             {

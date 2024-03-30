@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -20,25 +21,27 @@ namespace API.Controllers
             _context = context;
         }
 
-        // GET: api/Comments
-        [HttpGet]
+        // GET: api/Comments/GetComments
+        [HttpGet("GetComments")]
+        [Authorize] // Requires authorization to access
         public async Task<ActionResult<IEnumerable<Comment>>> GetComments()
         {
-          if (_context.Comments == null)
-          {
-              return NotFound();
-          }
+            if (_context.Comments == null)
+            {
+                return NotFound();
+            }
             return await _context.Comments.ToListAsync();
         }
 
-        // GET: api/Comments/5
-        [HttpGet("{id}")]
+        // GET: api/Comments/GetComment/5
+        [HttpGet("GetComment/{id}")]
+        [AllowAnonymous] // Allows anonymous access
         public async Task<ActionResult<Comment>> GetComment(int id)
         {
-          if (_context.Comments == null)
-          {
-              return NotFound();
-          }
+            if (_context.Comments == null)
+            {
+                return NotFound();
+            }
             var comment = await _context.Comments.FindAsync(id);
 
             if (comment == null)
@@ -49,9 +52,9 @@ namespace API.Controllers
             return comment;
         }
 
-        // PUT: api/Comments/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPut("{id}")]
+        // PUT: api/Comments/UpdateComment/5
+        [HttpPut("UpdateComment/{id}")]
+        [Authorize] // Requires authorization to access
         public async Task<IActionResult> PutComment(int id, Comment comment)
         {
             if (id != comment.CommentId)
@@ -80,23 +83,24 @@ namespace API.Controllers
             return NoContent();
         }
 
-        // POST: api/Comments
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPost]
+        // POST: api/Comments/CreateComment
+        [HttpPost("CreateComment")]
+        [Authorize] // Requires authorization to access
         public async Task<ActionResult<Comment>> PostComment(Comment comment)
         {
-          if (_context.Comments == null)
-          {
-              return Problem("Entity set 'StarplexContext.Comments'  is null.");
-          }
+            if (_context.Comments == null)
+            {
+                return Problem("Entity set 'StarplexContext.Comments' is null.");
+            }
             _context.Comments.Add(comment);
             await _context.SaveChangesAsync();
 
             return CreatedAtAction("GetComment", new { id = comment.CommentId }, comment);
         }
 
-        // DELETE: api/Comments/5
-        [HttpDelete("{id}")]
+        // DELETE: api/Comments/DeleteComment/5
+        [HttpDelete("DeleteComment/{id}")]
+        [Authorize] // Requires authorization to access
         public async Task<IActionResult> DeleteComment(int id)
         {
             if (_context.Comments == null)
