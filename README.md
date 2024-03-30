@@ -1,1 +1,1 @@
-Add your branch and merge it with main 
+RUN SQL SCRIPT 1ST
