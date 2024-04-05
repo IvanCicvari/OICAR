@@ -1,0 +1,107 @@
+﻿@model IEnumerable<Admin.Models.VideoViewModel>
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<h1>Index</h1>
+
+<p>
+    <a asp-action="Create">Create New</a>
+</p>
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.Idvideo)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.UserId)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Title)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Description)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.UploadDate)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.ThumbnailUrl)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.VideoUrl)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Duration)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Categories)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.PrivacySetting)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.TotalLikes)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.TotalViews)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.TotalSubscribers)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model) {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.Idvideo)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.UserId)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Title)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Description)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.UploadDate)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.ThumbnailUrl)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.VideoUrl)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Duration)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Categories)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.PrivacySetting)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.TotalLikes)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.TotalViews)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.TotalSubscribers)
+            </td>
+            <td>
+                @Html.ActionLink("Edit", "Edit", new { /* id=item.PrimaryKey */ }) |
+                @Html.ActionLink("Details", "Details", new { /* id=item.PrimaryKey */ }) |
+                @Html.ActionLink("Delete", "Delete", new { /* id=item.PrimaryKey */ })
+            </td>
+        </tr>
+}
+    </tbody>
+</table>
