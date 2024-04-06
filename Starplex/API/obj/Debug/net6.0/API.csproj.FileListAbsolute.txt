@@ -268,3 +268,4 @@ C:\Users\ivanc\source\repos\IvanCicvari\OICAR\Starplex\API\bin\Debug\net6.0\runt
 C:\Users\ivanc\source\repos\IvanCicvari\OICAR\Starplex\API\bin\Debug\net6.0\Microsoft.AspNetCore.Authentication.JwtBearer.dll
 C:\Users\ivanc\source\repos\IvanCicvari\OICAR\Starplex\API\bin\Debug\net6.0\API.xml
 C:\Users\ivanc\source\repos\IvanCicvari\OICAR\Starplex\API\obj\Debug\net6.0\API.xml
+C:\Users\ivanc\source\repos\IvanCicvari\OICAR\Starplex\API\bin\Debug\net6.0\AutoMapper.dll

@@ -9,6 +9,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Cryptography;
+using System.Security.Claims;
 
 namespace API.Controllers
 {
@@ -83,7 +84,7 @@ namespace API.Controllers
         // POST: api/Users
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost("CreateUser")]
-        [Authorize]
+        [AllowAnonymous]
         public async Task<ActionResult<User>> PostUser(User user)
         {
             if (_context.Users == null)
@@ -147,7 +148,7 @@ namespace API.Controllers
             return _context.Users.Any(e => e.Iduser == id);
         }
 
-    
+
         [AllowAnonymous]
         [HttpPost("Login")]
         public IActionResult Login(User loginRequest)
@@ -169,9 +170,25 @@ namespace API.Controllers
 
         private User AuthenticateUser(string username, string password)
         {
-            var user = _context.Users.FirstOrDefault(u => u.Username == username && u.Password == password);
+            // Find the user by username
+            var user = _context.Users.FirstOrDefault(u => u.Username == username);
 
-            return user;
+            // Check if user exists and password is correct
+            if (user != null && VerifyPassword(password, user.PasswordHash, Convert.FromBase64String(user.PasswordSalt)))
+            {
+                return user;
+            }
+
+            return null;
+        }
+
+        private bool VerifyPassword(string password, string storedHash, byte[] salt)
+        {
+            // Hash the provided password with the stored salt
+            string hashedPassword = HashPassword(password, salt);
+
+            // Compare the stored hash with the newly computed hash
+            return hashedPassword == storedHash;
         }
 
         private string GenerateTokens(User user)
@@ -180,7 +197,17 @@ namespace API.Controllers
             var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]));
             var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
 
-            var token = new JwtSecurityToken(_config["Jwt:Issuer"], _config["Jwt:Audience"], null, expires: DateTime.Now.AddDays(1), signingCredentials: credentials);
+            var token = new JwtSecurityToken(
+                _config["Jwt:Issuer"],
+                _config["Jwt:Audience"],
+                new[]
+                {
+            new Claim(JwtRegisteredClaimNames.Sub, user.Iduser.ToString()),
+            new Claim(JwtRegisteredClaimNames.Email, user.Email),
+                },
+                expires: DateTime.Now.AddDays(1),
+                signingCredentials: credentials);
+
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
 
