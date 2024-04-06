@@ -10,7 +10,7 @@ using API.Models;
 
 namespace API.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/[controller]/[action]")]
     [ApiController]
     public class VideosController : ControllerBase
     {
@@ -21,93 +21,122 @@ namespace API.Controllers
             _context = context;
         }
 
-        // GET: api/Videos
-        [HttpGet("GetVideos")]
-        [Authorize] // Requires authorization to access
-        public async Task<ActionResult<IEnumerable<Video>>> GetVideos()
+        [HttpGet]
+        public IActionResult Get()
         {
-            return await _context.Videos.ToListAsync();
-        }
-
-        // GET: api/Videos/5
-        [HttpGet("GetVideo/{id}")]
-        [AllowAnonymous] // Allows anonymous access
-        public async Task<ActionResult<Video>> GetVideo(int id)
-        {
-            var video = await _context.Videos.FindAsync(id);
-
-            if (video == null)
+            try
             {
-                return NotFound();
+                var videos = _context.Videos.ToList();
+                if (videos.Count == 0)
+                {
+                    return NotFound("Videos are not available.");
+                }
+                return Ok(videos);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
             }
 
-            return video;
         }
 
-        // PUT: api/Videos/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPut("UpdateVideo/{id}")]
-        [Authorize] // Requires authorization to access
-        public async Task<IActionResult> PutVideo(int id, Video video)
+        [HttpGet("{id}")]
+        public IActionResult Get(int id)
         {
-            if (id != video.Idvideo)
+            try
             {
-                return BadRequest();
+                var video = _context.Videos.Find(id);
+                if (video == null)
+                {
+                    return NotFound($"Video with id {id} is not found.");
+                }
+                return Ok(video);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
             }
 
-            _context.Entry(video).State = EntityState.Modified;
+        }
+
+        [HttpPost]
+        public IActionResult Post(Video video)
+        {
+            try
+            {
+                _context.Add(video);
+                _context.SaveChanges();
+                return Ok("Video created.");
+            }
+            catch (Exception ex)
+            {
+
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpPut]
+        public IActionResult Put(Video video)
+        {
+            if (video == null || video.Idvideo == 0)
+            {
+                if (video == null)
+                {
+                    return BadRequest("Video data is invalid");
+                }
+                else if (video.Idvideo == 0)
+                {
+                    return BadRequest($"Video id {video.Idvideo} is invalid.");
+                }
+            }
 
             try
             {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!VideoExists(id))
+                var videoModel = _context.Videos.Find(video.Idvideo);
+                if (videoModel == null)
                 {
-                    return NotFound();
+                    return NotFound($"Video with id {video.Idvideo} not found.");
                 }
-                else
-                {
-                    throw;
-                }
+                videoModel.UserId = video.UserId;
+                videoModel.Title = video.Title;
+                videoModel.Description = video.Description;
+                videoModel.UploadDate = video.UploadDate;
+                videoModel.ThumbnailUrl = video.ThumbnailUrl;
+                videoModel.VideoUrl = video.VideoUrl;
+                videoModel.Duration = video.Duration;
+                videoModel.Categories = video.Categories;
+                videoModel.PrivacySetting = video.PrivacySetting;
+                videoModel.TotalLikes = video.TotalLikes;
+                videoModel.TotalViews = video.TotalViews;
+                videoModel.TotalSubscribers = video.TotalSubscribers;
+                _context.SaveChanges();
+                return Ok(videoModel);
             }
-
-            return NoContent();
-        }
-
-        // POST: api/Videos
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPost("UpdateVideo")]
-        [Authorize] // Requires authorization to access
-        public async Task<ActionResult<Video>> PostVideo(Video video)
-        {
-            _context.Videos.Add(video);
-            await _context.SaveChangesAsync();
-
-            return CreatedAtAction("GetVideo", new { id = video.Idvideo }, video);
-        }
-
-        // DELETE: api/Videos/5
-        [HttpDelete("DeleteVideo/{id}")]
-        [Authorize] // Requires authorization to access
-        public async Task<IActionResult> DeleteVideo(int id)
-        {
-            var video = await _context.Videos.FindAsync(id);
-            if (video == null)
+            catch (Exception ex)
             {
-                return NotFound();
+                return BadRequest(ex.Message);
             }
-
-            _context.Videos.Remove(video);
-            await _context.SaveChangesAsync();
-
-            return NoContent();
         }
 
-        private bool VideoExists(int id)
+        [HttpDelete]
+        public IActionResult Delete(int id)
         {
-            return (_context.Videos?.Any(e => e.Idvideo == id)).GetValueOrDefault();
+            try
+            {
+                var video = _context.Videos.Find(id);
+                if (video == null)
+                {
+                    return NotFound($"Video with id {id} not found.");
+                }
+                _context.Videos.Remove(video);
+                _context.SaveChanges();
+                return Ok($"Video with id {id} deleted.");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+
         }
     }
 }

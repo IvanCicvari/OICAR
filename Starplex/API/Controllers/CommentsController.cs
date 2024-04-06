@@ -10,7 +10,7 @@ using API.Models;
 
 namespace API.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/[controller]/[action]")]
     [ApiController]
     public class CommentsController : ControllerBase
     {
@@ -21,107 +21,116 @@ namespace API.Controllers
             _context = context;
         }
 
-        // GET: api/Comments/GetComments
-        [HttpGet("GetComments")]
-        [Authorize] // Requires authorization to access
-        public async Task<ActionResult<IEnumerable<Comment>>> GetComments()
+        [HttpGet]
+        public IActionResult Get()
         {
-            if (_context.Comments == null)
+            try
             {
-                return NotFound();
+                var comments = _context.Comments.ToList();
+                if (comments.Count == 0)
+                {
+                    return NotFound("Comments are not available.");
+                }
+                return Ok(comments);
             }
-            return await _context.Comments.ToListAsync();
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+
         }
 
-        // GET: api/Comments/GetComment/5
-        [HttpGet("GetComment/{id}")]
-        [AllowAnonymous] // Allows anonymous access
-        public async Task<ActionResult<Comment>> GetComment(int id)
+        [HttpGet("{id}")]
+        public IActionResult Get(int id)
         {
-            if (_context.Comments == null)
+            try
             {
-                return NotFound();
+                var comment = _context.Comments.Find(id);
+                if (comment == null)
+                {
+                    return NotFound($"Comment with id {id} is not found.");
+                }
+                return Ok(comment);
             }
-            var comment = await _context.Comments.FindAsync(id);
-
-            if (comment == null)
+            catch (Exception ex)
             {
-                return NotFound();
+                return BadRequest(ex.Message);
             }
 
-            return comment;
         }
 
-        // PUT: api/Comments/UpdateComment/5
-        [HttpPut("UpdateComment/{id}")]
-        [Authorize] // Requires authorization to access
-        public async Task<IActionResult> PutComment(int id, Comment comment)
+        [HttpPost]
+        public IActionResult Post(Comment comment)
         {
-            if (id != comment.CommentId)
+            try
             {
-                return BadRequest();
+                _context.Add(comment);
+                _context.SaveChanges();
+                return Ok("Comment created.");
             }
+            catch (Exception ex)
+            {
 
-            _context.Entry(comment).State = EntityState.Modified;
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpPut]
+        public IActionResult Put(Comment comment)
+        {
+            if (comment == null || comment.CommentId == 0)
+            {
+                if (comment == null)
+                {
+                    return BadRequest("Comment data is invalid");
+                }
+                else if (comment.CommentId == 0)
+                {
+                    return BadRequest($"Comment id {comment.CommentId} is invalid.");
+                }
+            }
 
             try
             {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!CommentExists(id))
+                var commentModel = _context.Comments.Find(comment.CommentId);
+                if (commentModel == null)
                 {
-                    return NotFound();
+                    return NotFound($"Comment with id {comment.CommentId} not found.");
                 }
-                else
+
+                commentModel.UserId = comment.UserId;
+                commentModel.VideoId = comment.VideoId;
+                commentModel.CommentText = comment.CommentText;
+                commentModel.CommentDate = comment.CommentDate;
+
+                _context.SaveChanges();
+                return Ok(commentModel);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpDelete]
+        public IActionResult Delete(int id)
+        {
+            try
+            {
+                var comment = _context.Comments.Find(id);
+                if (comment == null)
                 {
-                    throw;
+                    return NotFound($"Comment with id {id} not found.");
                 }
+                _context.Comments.Remove(comment);
+                _context.SaveChanges();
+                return Ok($"Comment with id {id} deleted.");
             }
-
-            return NoContent();
-        }
-
-        // POST: api/Comments/CreateComment
-        [HttpPost("CreateComment")]
-        [Authorize] // Requires authorization to access
-        public async Task<ActionResult<Comment>> PostComment(Comment comment)
-        {
-            if (_context.Comments == null)
+            catch (Exception ex)
             {
-                return Problem("Entity set 'StarplexContext.Comments' is null.");
-            }
-            _context.Comments.Add(comment);
-            await _context.SaveChangesAsync();
-
-            return CreatedAtAction("GetComment", new { id = comment.CommentId }, comment);
-        }
-
-        // DELETE: api/Comments/DeleteComment/5
-        [HttpDelete("DeleteComment/{id}")]
-        [Authorize] // Requires authorization to access
-        public async Task<IActionResult> DeleteComment(int id)
-        {
-            if (_context.Comments == null)
-            {
-                return NotFound();
-            }
-            var comment = await _context.Comments.FindAsync(id);
-            if (comment == null)
-            {
-                return NotFound();
+                return BadRequest(ex.Message);
             }
 
-            _context.Comments.Remove(comment);
-            await _context.SaveChangesAsync();
-
-            return NoContent();
-        }
-
-        private bool CommentExists(int id)
-        {
-            return (_context.Comments?.Any(e => e.CommentId == id)).GetValueOrDefault();
         }
     }
 }

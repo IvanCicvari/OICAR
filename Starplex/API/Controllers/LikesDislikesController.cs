@@ -10,7 +10,7 @@ using API.Models;
 
 namespace API.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/[controller]/[action]")]
     [ApiController]
     public class LikesDislikesController : ControllerBase
     {
@@ -21,107 +21,115 @@ namespace API.Controllers
             _context = context;
         }
 
-        // GET: api/LikesDislikes/GetLikesDislikes
-        [HttpGet("GetLikesDislikes")]
-        [AllowAnonymous] // Allows anonymous access
-        public async Task<ActionResult<IEnumerable<LikesDislike>>> GetLikesDislikes()
+        [HttpGet]
+        public IActionResult Get()
         {
-            if (_context.LikesDislikes == null)
+            try
             {
-                return NotFound();
+                var likes = _context.LikesDislikes.ToList();
+                if (likes.Count == 0)
+                {
+                    return NotFound("LikesDislikes are not available.");
+                }
+                return Ok(likes);
             }
-            return await _context.LikesDislikes.ToListAsync();
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+
         }
 
-        // GET: api/LikesDislikes/GetLikesDislike/5
-        [HttpGet("GetLikesDislike/{id}")]
-        [AllowAnonymous] // Allows anonymous access
-        public async Task<ActionResult<LikesDislike>> GetLikesDislike(int id)
+        [HttpGet("{id}")]
+        public IActionResult Get(int id)
         {
-            if (_context.LikesDislikes == null)
+            try
             {
-                return NotFound();
+                var like = _context.LikesDislikes.Find(id);
+                if (like == null)
+                {
+                    return NotFound($"LikeDislike with id {id} is not found.");
+                }
+                return Ok(like);
             }
-            var likesDislike = await _context.LikesDislikes.FindAsync(id);
-
-            if (likesDislike == null)
+            catch (Exception ex)
             {
-                return NotFound();
+                return BadRequest(ex.Message);
             }
 
-            return likesDislike;
         }
 
-        // PUT: api/LikesDislikes/UpdateLikesDislike/5
-        [HttpPut("UpdateLikesDislike/{id}")]
-        [Authorize] // Requires authorization to access
-        public async Task<IActionResult> PutLikesDislike(int id, LikesDislike likesDislike)
+        [HttpPost]
+        public IActionResult Post(LikesDislike likes)
         {
-            if (id != likesDislike.LikeId)
+            try
             {
-                return BadRequest();
+                _context.Add(likes);
+                _context.SaveChanges();
+                return Ok("LikeDislike created.");
             }
+            catch (Exception ex)
+            {
 
-            _context.Entry(likesDislike).State = EntityState.Modified;
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpPut]
+        public IActionResult Put(LikesDislike like)
+        {
+            if (like == null || like.LikeId == 0)
+            {
+                if (like == null)
+                {
+                    return BadRequest("LikeDislike data is invalid");
+                }
+                else if (like.LikeId == 0)
+                {
+                    return BadRequest($"LikeDislike id {like.LikeId} is invalid.");
+                }
+            }
 
             try
             {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!LikesDislikeExists(id))
+                var likeModel = _context.LikesDislikes.Find(like.LikeId);
+                if (likeModel == null)
                 {
-                    return NotFound();
+                    return NotFound($"LikeDislike with id {like.LikeId} not found.");
                 }
-                else
+
+                likeModel.UserId = like.UserId;
+                likeModel.VideoId = like.VideoId;
+                likeModel.LikeStatus = like.LikeStatus;
+
+                _context.SaveChanges();
+                return Ok(likeModel);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpDelete]
+        public IActionResult Delete(int id)
+        {
+            try
+            {
+                var like = _context.LikesDislikes.Find(id);
+                if (like == null)
                 {
-                    throw;
+                    return NotFound($"LikesDislikes with id {id} not found.");
                 }
+                _context.LikesDislikes.Remove(like);
+                _context.SaveChanges();
+                return Ok($"LikesDislikes with id {id} deleted.");
             }
-
-            return NoContent();
-        }
-
-        // POST: api/LikesDislikes/CreateLikesDislike
-        [HttpPost("CreateLikesDislike")]
-        [Authorize] // Requires authorization to access
-        public async Task<ActionResult<LikesDislike>> PostLikesDislike(LikesDislike likesDislike)
-        {
-            if (_context.LikesDislikes == null)
+            catch (Exception ex)
             {
-                return Problem("Entity set 'StarplexContext.LikesDislikes'  is null.");
-            }
-            _context.LikesDislikes.Add(likesDislike);
-            await _context.SaveChangesAsync();
-
-            return CreatedAtAction("GetLikesDislike", new { id = likesDislike.LikeId }, likesDislike);
-        }
-
-        // DELETE: api/LikesDislikes/DeleteLikesDislike/5
-        [HttpDelete("DeleteLikesDislike/{id}")]
-        [Authorize] // Requires authorization to access
-        public async Task<IActionResult> DeleteLikesDislike(int id)
-        {
-            if (_context.LikesDislikes == null)
-            {
-                return NotFound();
-            }
-            var likesDislike = await _context.LikesDislikes.FindAsync(id);
-            if (likesDislike == null)
-            {
-                return NotFound();
+                return BadRequest(ex.Message);
             }
 
-            _context.LikesDislikes.Remove(likesDislike);
-            await _context.SaveChangesAsync();
-
-            return NoContent();
-        }
-
-        private bool LikesDislikeExists(int id)
-        {
-            return (_context.LikesDislikes?.Any(e => e.LikeId == id)).GetValueOrDefault();
         }
     }
 }

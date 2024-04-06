@@ -13,7 +13,7 @@ namespace API.Controllers
     /// <summary>
     /// Represents the API for managing views.
     /// </summary>
-    [Route("api/[controller]")]
+    [Route("api/[controller]/[action]")]
     [ApiController]
     public class ViewsController : ControllerBase
     {
@@ -24,108 +24,115 @@ namespace API.Controllers
             _context = context;
         }
 
-        // GET: api/Views/GetAllViews
-        [HttpGet("GetAllViews")]
-        [Authorize] // Requires authorization to access
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult<IEnumerable<View>>> GetViews()
+        [HttpGet]
+        public IActionResult Get()
         {
-            if (_context.Views == null)
+            try
             {
-                return NotFound();
+                var views = _context.Views.ToList();
+                if (views.Count == 0)
+                {
+                    return NotFound("Views are not available.");
+                }
+                return Ok(views);
             }
-            return await _context.Views.ToListAsync();
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+
         }
 
-        // GET: api/Views/GetView/5
-        [HttpGet("GetView/{id}")]
-        [AllowAnonymous] // Allows anonymous access
-        public async Task<ActionResult<View>> GetView(int id)
+        [HttpGet("{id}")]
+        public IActionResult Get(int id)
         {
-            if (_context.Views == null)
+            try
             {
-                return NotFound();
+                var view = _context.Views.Find(id);
+                if (view == null)
+                {
+                    return NotFound($"View with id {id} is not found.");
+                }
+                return Ok(view);
             }
-            var view = await _context.Views.FindAsync(id);
-
-            if (view == null)
+            catch (Exception ex)
             {
-                return NotFound();
+                return BadRequest(ex.Message);
             }
 
-            return view;
         }
 
-        // PUT: api/Views/UpdateView/5
-        [HttpPut("UpdateView/{id}")]
-        [Authorize] // Requires authorization to access
-        public async Task<IActionResult> PutView(int id, View view)
+        [HttpPost]
+        public IActionResult Post(View view)
         {
-            if (id != view.ViewId)
+            try
             {
-                return BadRequest();
+                _context.Add(view);
+                _context.SaveChanges();
+                return Ok("View created.");
             }
+            catch (Exception ex)
+            {
 
-            _context.Entry(view).State = EntityState.Modified;
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpPut]
+        public IActionResult Put(View view)
+        {
+            if (view == null || view.ViewId == 0)
+            {
+                if (view == null)
+                {
+                    return BadRequest("View data is invalid");
+                }
+                else if (view.ViewId == 0)
+                {
+                    return BadRequest($"View id {view.ViewId} is invalid.");
+                }
+            }
 
             try
             {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!ViewExists(id))
+                var viewModel = _context.Views.Find(view.ViewId);
+                if (viewModel == null)
                 {
-                    return NotFound();
+                    return NotFound($"View with id {view.ViewId} not found.");
                 }
-                else
+
+                viewModel.UserId = view.UserId;
+                viewModel.VideoId = view.VideoId;
+                viewModel.ViewDate = view.ViewDate;
+
+                _context.SaveChanges();
+                return Ok(viewModel);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpDelete]
+        public IActionResult Delete(int id)
+        {
+            try
+            {
+                var view = _context.Views.Find(id);
+                if (view == null)
                 {
-                    throw;
+                    return NotFound($"View with id {id} not found.");
                 }
+                _context.Views.Remove(view);
+                _context.SaveChanges();
+                return Ok($"View with id {id} deleted.");
             }
-
-            return NoContent();
-        }
-
-        // POST: api/Views/AddView
-        [HttpPost("AddView")]
-        [Authorize] // Requires authorization to access
-        public async Task<ActionResult<View>> PostView(View view)
-        {
-            if (_context.Views == null)
+            catch (Exception ex)
             {
-                return Problem("Entity set 'StarplexContext.Views' is null.");
-            }
-            _context.Views.Add(view);
-            await _context.SaveChangesAsync();
-
-            return CreatedAtAction("GetView", new { id = view.ViewId }, view);
-        }
-
-        // DELETE: api/Views/DeleteView/5
-        [HttpDelete("DeleteView/{id}")]
-        [Authorize] // Requires authorization to access
-        public async Task<IActionResult> DeleteView(int id)
-        {
-            if (_context.Views == null)
-            {
-                return NotFound();
-            }
-            var view = await _context.Views.FindAsync(id);
-            if (view == null)
-            {
-                return NotFound();
+                return BadRequest(ex.Message);
             }
 
-            _context.Views.Remove(view);
-            await _context.SaveChangesAsync();
-
-            return NoContent();
-        }
-
-        private bool ViewExists(int id)
-        {
-            return (_context.Views?.Any(e => e.ViewId == id)).GetValueOrDefault();
         }
     }
 }

@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace API.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/[controller]/[action]")]
     [ApiController]
     public class SubscriptionsController : ControllerBase
     {
@@ -21,107 +21,114 @@ namespace API.Controllers
             _context = context;
         }
 
-        // GET: api/Subscriptions/GetSubscriptions
-        [HttpGet("GetSubscriptions")]
-        [Authorize] // Requires authorization to access
-        public async Task<ActionResult<IEnumerable<Subscription>>> GetSubscriptions()
+        [HttpGet]
+        public IActionResult Get()
         {
-            if (_context.Subscriptions == null)
+            try
             {
-                return NotFound();
+                var subscriptions = _context.Subscriptions.ToList();
+                if (subscriptions.Count == 0)
+                {
+                    return NotFound("Subscriptions are not available.");
+                }
+                return Ok(subscriptions);
             }
-            return await _context.Subscriptions.ToListAsync();
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+
         }
 
-        // GET: api/Subscriptions/GetSubscription/5
-        [HttpGet("GetSubscription/{id}")]
-        [AllowAnonymous] // Allows anonymous access
-        public async Task<ActionResult<Subscription>> GetSubscription(int id)
+        [HttpGet("{id}")]
+        public IActionResult Get(int id)
         {
-            if (_context.Subscriptions == null)
+            try
             {
-                return NotFound();
+                var subscription = _context.Subscriptions.Find(id);
+                if (subscription == null)
+                {
+                    return NotFound($"Subscription with id {id} is not found.");
+                }
+                return Ok(subscription);
             }
-            var subscription = await _context.Subscriptions.FindAsync(id);
-
-            if (subscription == null)
+            catch (Exception ex)
             {
-                return NotFound();
+                return BadRequest(ex.Message);
             }
 
-            return subscription;
         }
 
-        // PUT: api/Subscriptions/UpdateSubscription/5
-        [HttpPut("UpdateSubscription/{id}")]
-        [Authorize] // Requires authorization to access
-        public async Task<IActionResult> PutSubscription(int id, Subscription subscription)
+        [HttpPost]
+        public IActionResult Post(Subscription subscription)
         {
-            if (id != subscription.SubscriptionId)
+            try
             {
-                return BadRequest();
+                _context.Add(subscription);
+                _context.SaveChanges();
+                return Ok("Subscription created.");
             }
+            catch (Exception ex)
+            {
 
-            _context.Entry(subscription).State = EntityState.Modified;
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpPut]
+        public IActionResult Put(Subscription subscription)
+        {
+            if (subscription == null || subscription.SubscriptionId == 0)
+            {
+                if (subscription == null)
+                {
+                    return BadRequest("Subscription data is invalid");
+                }
+                else if (subscription.SubscriptionId == 0)
+                {
+                    return BadRequest($"Subscription id {subscription.SubscriptionId} is invalid.");
+                }
+            }
 
             try
             {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!SubscriptionExists(id))
+                var subscriptionModel = _context.Subscriptions.Find(subscription.SubscriptionId);
+                if (subscriptionModel == null)
                 {
-                    return NotFound();
+                    return NotFound($"Subscription with id {subscription.SubscriptionId} not found.");
                 }
-                else
+
+                subscriptionModel.SubscriberId = subscription.SubscriberId;
+                subscriptionModel.ChannelId = subscription.ChannelId;
+
+                _context.SaveChanges();
+                return Ok(subscriptionModel);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpDelete]
+        public IActionResult Delete(int id)
+        {
+            try
+            {
+                var subscription = _context.Subscriptions.Find(id);
+                if (subscription == null)
                 {
-                    throw;
+                    return NotFound($"Subscription with id {id} not found.");
                 }
+                _context.Subscriptions.Remove(subscription);
+                _context.SaveChanges();
+                return Ok($"Subscription with id {id} deleted.");
             }
-
-            return NoContent();
-        }
-
-        // POST: api/Subscriptions/CreateSubscription
-        [HttpPost("CreateSubscription")]
-        [Authorize] // Requires authorization to access
-        public async Task<ActionResult<Subscription>> PostSubscription(Subscription subscription)
-        {
-            if (_context.Subscriptions == null)
+            catch (Exception ex)
             {
-                return Problem("Entity set 'StarplexContext.Subscriptions' is null.");
-            }
-            _context.Subscriptions.Add(subscription);
-            await _context.SaveChangesAsync();
-
-            return CreatedAtAction("GetSubscription", new { id = subscription.SubscriptionId }, subscription);
-        }
-
-        // DELETE: api/Subscriptions/DeleteSubscription/5
-        [HttpDelete("DeleteSubscription/{id}")]
-        [Authorize] // Requires authorization to access
-        public async Task<IActionResult> DeleteSubscription(int id)
-        {
-            if (_context.Subscriptions == null)
-            {
-                return NotFound();
-            }
-            var subscription = await _context.Subscriptions.FindAsync(id);
-            if (subscription == null)
-            {
-                return NotFound();
+                return BadRequest(ex.Message);
             }
 
-            _context.Subscriptions.Remove(subscription);
-            await _context.SaveChangesAsync();
-
-            return NoContent();
-        }
-
-        private bool SubscriptionExists(int id)
-        {
-            return (_context.Subscriptions?.Any(e => e.SubscriptionId == id)).GetValueOrDefault();
         }
     }
 }

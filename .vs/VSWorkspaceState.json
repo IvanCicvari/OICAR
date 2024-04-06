@@ -1,6 +1,9 @@
 {
   "ExpandedNodes": [
-    ""
+    "",
+    "\\Starplex",
+    "\\Starplex\\API\\Models"
   ],
+  "SelectedNode": "\\Starplex\\Starplex.sln",
   "PreviewInSolutionExplorer": false
 }
