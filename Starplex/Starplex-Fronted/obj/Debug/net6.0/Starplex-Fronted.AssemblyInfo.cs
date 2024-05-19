@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Starplex-Fronted")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+a5e7e22dc06b808d1c9c8edc21d50eb6f25aba77")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+69770d6497690eae4e37b729f186cbfa8d52c3d7")]
 [assembly: System.Reflection.AssemblyProductAttribute("Starplex-Fronted")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Starplex-Fronted")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
